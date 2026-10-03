@@ -1460,7 +1460,7 @@ yargs(hideBin(process.argv))
           array: true,
         })
         .option("media", {
-          describe: "Comma list of image object_keys (from media:upload) to attach; single-post form only (max 4 images or 1 GIF)",
+          describe: "Comma list of image object_keys (from media:upload) to attach; single-post form only (max 4 images or 1 GIF). Without --text it makes a media-only post",
           type: "string",
         })
         .option("alt-text", {
@@ -1492,6 +1492,7 @@ yargs(hideBin(process.argv))
         .example('$0 scheduled:create --part "1/ Hook" --part "2/ Detail" --part "3/ CTA"', "Draft a 3-part thread")
         .example('$0 scheduled:create --text "Hello" --title "Launch teaser" --tag abc123', "Draft with a title and a tag")
         .example('$0 scheduled:create --text "Chart of the week" --media "<object_key>" --alt-text "Revenue chart"', "Draft with an image")
+        .example('$0 scheduled:create --media "<object_key>"', "Draft an image-only post (no text)")
         .example('$0 scheduled:create --text "Hello" --at "2026-08-01T15:00:00Z" --auto-retweet 6 --auto-retweet-remove 4', "Schedule with an auto retweet")
         .example('$0 scheduled:create --text "Hello" --at "2026-08-01T15:00:00Z" --no-auto-retweet --no-auto-plug', "Schedule with your defaults off for this post"),
     run(scheduledCreate)
@@ -1509,7 +1510,7 @@ yargs(hideBin(process.argv))
           array: true,
         })
         .option("media", {
-          describe: "Comma list of image object_keys to attach with --text (full replace: re-list existing keys to keep them; --text without --media removes the post's media)",
+          describe: "Comma list of image object_keys to attach with --text (full replace: re-list existing keys to keep them; --text without --media removes the post's media; --text \"\" with --media makes the post media-only)",
           type: "string",
         })
         .option("alt-text", {
@@ -1544,7 +1545,8 @@ yargs(hideBin(process.argv))
         .example('$0 scheduled:update abc123 --at "2026-08-01T15:00:00Z" --status scheduled', "Promote a draft to the queue")
         .example('$0 scheduled:update abc123 --status draft', "Pull a post back to drafts (quota refunds)")
         .example('$0 scheduled:update abc123 --auto-delete 8 --auto-delete-threshold 500', "Add an auto delete to the post")
-        .example('$0 scheduled:update abc123 --no-auto-retweet', "Remove the post's auto retweet"),
+        .example('$0 scheduled:update abc123 --no-auto-retweet', "Remove the post's auto retweet")
+        .example('$0 scheduled:update abc123 --text "" --media "<object_key>"', "Make the post image-only (removes its text)"),
     run(scheduledUpdate)
   )
   .command(
@@ -1565,7 +1567,7 @@ yargs(hideBin(process.argv))
           array: true,
         })
         .option("media", {
-          describe: "Comma list of image object_keys (from media:upload) to attach; single-post form only (max 4 images or 1 GIF)",
+          describe: "Comma list of image object_keys (from media:upload) to attach; single-post form only (max 4 images or 1 GIF). Without --text it makes a media-only post",
           type: "string",
         })
         .option("alt-text", {
@@ -1587,6 +1589,7 @@ yargs(hideBin(process.argv))
         })
         .example('$0 posts:publish --text "Shipping now." --idempotency-key launch-2026-09-07', "Publish a single post")
         .example('$0 posts:publish --part "1/ Hook" --part "2/ Detail" --idempotency-key thread-42', "Publish a thread")
+        .example('$0 posts:publish --media "<object_key>" --idempotency-key gif-2026-10-03', "Publish an image-only post")
         .example('$0 posts:publish --text "Shipping now." --auto-retweet 6 --idempotency-key launch-2026-09-07', "Publish with an auto retweet"),
     run(postsPublish)
   )

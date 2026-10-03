@@ -453,6 +453,7 @@ superx scheduled:delete <post-id>
 - Replays add `"replayed": true` to the JSON output and print a stderr note.
 - `scheduled:list` filters: `--status draft,scheduled,sent,error` (comma list), `--tags id,id` (any-of), `--from/--to` bounds on the scheduled time.
 - `media:upload` accepts JPG/PNG/WEBP (5MB) and GIF (15MB); a post part carries up to 4 images OR exactly 1 GIF. Uploads are capped at 100/day and expire after 24h if never attached.
+- Image-only posts work: `--media <key>` with no `--text` (on `scheduled:update` pass `--text "" --media <key>`, since it replaces the whole post), or a `--parts-json` part with `media` and no `text`.
 
 ### Publishing now (irreversible)
 

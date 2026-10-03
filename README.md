@@ -218,7 +218,7 @@ superx scheduled:create --text "Chart of the week" --media "$KEY" --alt-text "We
 superx scheduled:create --parts-json '[{"text":"1/ Hook","media":[{"object_key":"'"$KEY"'"}]},{"text":"2/ Detail"}]'
 ```
 
-`media:upload` accepts JPG, PNG, and WEBP up to 5MB and GIF up to 15MB; a post part carries up to 4 images or exactly 1 GIF. `--media` takes a comma list of keys; `--alt-text` (max 1,000 chars) works with a single key, and `--parts-json` covers threads and per-image alt text. Uploads are capped at 100 per day and expire after 24 hours if never attached. Video is not supported yet.
+`media:upload` accepts JPG, PNG, and WEBP up to 5MB and GIF up to 15MB; a post part carries up to 4 images or exactly 1 GIF. `--media` takes a comma list of keys; `--alt-text` (max 1,000 chars) works with a single key, and `--parts-json` covers threads and per-image alt text. A post can be image-only: `--media` without `--text` on `scheduled:create` and `posts:publish`, `--text "" --media <key>` on `scheduled:update`, or a `--parts-json` part with `media` and no `text`. Uploads are capped at 100 per day and expire after 24 hours if never attached. Video is not supported yet.
 
 Drafts can carry organizer fields: `--title` (max 300 chars) and `--scratchpad` (max 30,000 chars) are shown in the SuperX app and never posted; `--tag <id>` (repeatable, max 20) attaches tags from `tags:list`.
 

@@ -59,8 +59,9 @@ function mediaFromFlags(mediaFlag?: string, altText?: string): MediaItem[] | nul
   }));
 }
 
-/** Parse --parts-json: a JSON array of { text, media?: [{ object_key, alt_text? }] }. */
-function parsePartsJson(raw: string): Array<{ text: string; media?: MediaItem[] }> {
+/** Parse --parts-json: a JSON array of { text, media?: [{ object_key, alt_text? }] }.
+ * text may be omitted on a part that has media (media-only part). */
+function parsePartsJson(raw: string): Array<{ text?: string; media?: MediaItem[] }> {
   let parsed: unknown;
   try {
     parsed = JSON.parse(raw);
@@ -69,11 +70,19 @@ function parsePartsJson(raw: string): Array<{ text: string; media?: MediaItem[] 
     process.exit(1);
     throw new Error("unreachable");
   }
-  if (!Array.isArray(parsed) || parsed.some((p: any) => !p || typeof p !== "object" || typeof p.text !== "string")) {
-    note("--parts-json must be an array of { text, media? } objects.");
+  if (
+    !Array.isArray(parsed) ||
+    parsed.some(
+      (p: any) =>
+        !p ||
+        typeof p !== "object" ||
+        (typeof p.text !== "string" && !(p.text === undefined && Array.isArray(p.media) && p.media.length > 0))
+    )
+  ) {
+    note("--parts-json must be an array of { text, media? } objects (text may be left out on a part with media).");
     process.exit(1);
   }
-  return parsed as Array<{ text: string; media?: MediaItem[] }>;
+  return parsed as Array<{ text?: string; media?: MediaItem[] }>;
 }
 
 /** Flags shared by scheduled:create and scheduled:update. The numeric flags
@@ -257,11 +266,12 @@ export async function scheduledCreate(argv: AdvancedFlagArgs & {
     note("Use exactly one of --text (single post), --part (thread), or --parts-json.");
     process.exit(1);
   }
-  if (sourceCount === 0) {
+  // --media alone (no --text, or --text "") is a media-only single post.
+  if (sourceCount === 0 && argv.media === undefined) {
     note("Provide --text for a single post, --part flags for a thread, or --parts-json.");
     process.exit(1);
   }
-  if (argv.media !== undefined && !argv.text) {
+  if (argv.media !== undefined && (parts.length > 0 || argv["parts-json"] !== undefined)) {
     note("--media applies to the --text single-post form. For threads, put media in --parts-json.");
     process.exit(1);
   }
@@ -269,10 +279,10 @@ export async function scheduledCreate(argv: AdvancedFlagArgs & {
   const body: Record<string, unknown> = {};
   if (argv["parts-json"] !== undefined) {
     body.parts = parsePartsJson(argv["parts-json"]);
-  } else if (argv.text) {
+  } else if (argv.text || argv.media !== undefined) {
     const media = mediaFromFlags(argv.media, argv["alt-text"]);
     if (media) {
-      body.parts = [{ text: argv.text, media }];
+      body.parts = [{ text: argv.text || "", media }];
     } else {
       body.text = argv.text;
     }
@@ -323,8 +333,15 @@ export async function scheduledUpdate(argv: AdvancedFlagArgs & {
     note("Use exactly one of --text (single post), --part (thread), or --parts-json.");
     process.exit(1);
   }
-  if (argv.media !== undefined && !argv.text) {
-    note("--media applies to the --text single-post form. For threads, put media in --parts-json.");
+  if (argv.media !== undefined && argv.text === undefined) {
+    // PATCH parts are a full replace, so --media alone would also wipe the
+    // post's text. Make the caller say what the text should be: --text "" is
+    // the explicit media-only form.
+    if (parts.length > 0 || argv["parts-json"] !== undefined) {
+      note("--media applies to the --text single-post form. For threads, put media in --parts-json.");
+    } else {
+      note('--media replaces the whole post, text included. Pass --text with it, or --text "" for a media-only post.');
+    }
     process.exit(1);
   }
   if (argv.title !== undefined && argv["clear-title"]) {
@@ -344,12 +361,13 @@ export async function scheduledUpdate(argv: AdvancedFlagArgs & {
   const body: Record<string, unknown> = {};
   if (argv["parts-json"] !== undefined) {
     body.parts = parsePartsJson(argv["parts-json"]);
-  } else if (argv.text) {
+  } else if (argv.text || argv.media !== undefined) {
     const media = mediaFromFlags(argv.media, argv["alt-text"]);
     if (media) {
       // NOTE: PATCH parts are a FULL replace, media included. --text alone
-      // (no --media) wipes any media the post carried.
-      body.parts = [{ text: argv.text, media }];
+      // (no --media) wipes any media the post carried; --text "" with
+      // --media makes the post media-only.
+      body.parts = [{ text: argv.text || "", media }];
     } else {
       body.text = argv.text;
     }
@@ -414,11 +432,12 @@ export async function postsPublish(argv: AdvancedFlagArgs & {
     note("Use exactly one of --text (single post), --part (thread), or --parts-json.");
     process.exit(1);
   }
-  if (sourceCount === 0) {
+  // --media alone (no --text, or --text "") is a media-only single post.
+  if (sourceCount === 0 && argv.media === undefined) {
     note("Provide --text for a single post, --part flags for a thread, or --parts-json.");
     process.exit(1);
   }
-  if (argv.media !== undefined && !argv.text) {
+  if (argv.media !== undefined && (parts.length > 0 || argv["parts-json"] !== undefined)) {
     note("--media applies to the --text single-post form. For threads, put media in --parts-json.");
     process.exit(1);
   }
@@ -426,10 +445,10 @@ export async function postsPublish(argv: AdvancedFlagArgs & {
   const body: Record<string, unknown> = { scheduled_for: "now" };
   if (argv["parts-json"] !== undefined) {
     body.parts = parsePartsJson(argv["parts-json"]);
-  } else if (argv.text) {
+  } else if (argv.text || argv.media !== undefined) {
     const media = mediaFromFlags(argv.media, argv["alt-text"]);
     if (media) {
-      body.parts = [{ text: argv.text, media }];
+      body.parts = [{ text: argv.text || "", media }];
     } else {
       body.text = argv.text;
     }
