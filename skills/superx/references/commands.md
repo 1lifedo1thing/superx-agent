@@ -81,11 +81,12 @@ superx replies:received --limit 20                 # Replies the audience has se
 superx inspiration:search "build in public" --limit 10          # Topic search
 superx inspiration:search "indie hackers" --sort outlier        # Biggest overperformers
 superx inspiration:search "AI tools" --min-likes 500 --min-followers 1000 --max-followers 50000
+superx inspiration:search "SaaS pricing" --min-outlier-score 3 --min-length 100   # 3x+ expected engagement, 100+ chars
 ```
 
 - Searches a library of 50M+ real high-performing posts. Use results for structures, hooks, and angles to remix. Never copy them.
-- Flags: `--sort relevant|recent|likes|reposts|impressions|outlier`, `--min-likes/--min-reposts/--min-replies/--min-bookmarks/--min-impressions`, `--min-followers/--max-followers` (author size), `--since/--until`, `--lang` (default en), `--exclude-topics "crypto,politics"`, `--limit` (max 50), `--page` (1-7).
-- `outlier_score` on each result = how far the post outperformed the norm for its author's follower tier. Sorting by `outlier` surfaces content that won on substance, not audience size.
+- Flags: `--sort relevant|recent|likes|reposts|impressions|outlier`, `--min-likes/--min-reposts/--min-replies/--min-bookmarks/--min-impressions`, `--min-length` (characters), `--min-followers/--max-followers` (author size), `--min-outlier-score` (0-1000), `--since/--until`, `--lang` (default en), `--exclude-topics "crypto,politics"`, `--limit` (max 50), `--page` (1-7).
+- `outlier_score` on each result = how far the post outperformed the norm for its author's follower tier (1.0 = expected, 3 = three times expected). Sorting by `outlier` surfaces content that won on substance, not audience size; `--min-outlier-score` drops everything below a floor.
 - Results are relevance-ranked, strongest matches first. Weak and promotional matches are filtered out, so a page may return fewer than `--limit` posts.
 
 ### Live X lookups

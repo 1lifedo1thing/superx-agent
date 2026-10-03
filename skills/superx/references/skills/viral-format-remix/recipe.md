@@ -10,6 +10,6 @@ superx scheduled:create --text "<approved text>" --idempotency-key "remix-<slug>
 
 `--mirror` copies the SHAPE of a proven post, not its words. Pick a reference with room for the account's own facts.
 
-MCP: `find_inspiration` -> `draft_post` -> `schedule_post`
+MCP: `find_inspiration` (`sort: "outlier"`, optionally `min_outlier_score: 3` for posts with 3x the expected engagement for the author's size) -> `draft_post` -> `schedule_post`
 
 Stops at: reference posts plus drafts, for the person to pick from. 3 AI credits per draft written.

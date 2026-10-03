@@ -490,6 +490,11 @@ yargs(hideBin(process.argv))
         .option("min-impressions", { describe: "Only posts with at least this many impressions", type: "number" })
         .option("min-followers", { describe: "Only posts from authors with at least this many followers", type: "number" })
         .option("max-followers", { describe: "Only posts from authors with at most this many followers", type: "number" })
+        .option("min-outlier-score", {
+          describe: "Only posts with at least this outlier score (1.0 = expected engagement for the author's size, max 1000)",
+          type: "number",
+        })
+        .option("min-length", { describe: "Only posts with at least this many characters", type: "number" })
         .option("since", { describe: "Only posts after this time (UTC ISO-8601)", type: "string" })
         .option("until", { describe: "Only posts before this time (UTC ISO-8601)", type: "string" })
         .option("lang", { describe: "Language code (default en)", type: "string" })

@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+- `inspiration:search` gains `--min-outlier-score <n>` (0-1000) and `--min-length <n>`. `outlier_score` is a post's engagement relative to what is expected for its author's follower count: 1.0 = expected, 3 = three times expected. `--min-outlier-score 3` keeps only posts at or above 3, and posts whose author's follower count is unknown are left out. `--min-length` keeps posts with at least that many characters
+- MCP `find_inspiration` gained the same filters as the CLI and API: `min_followers` / `max_followers`, `min_outlier_score`, `sort` (including `outlier`), `min_reposts`, `min_replies`, `min_bookmarks`, `min_impressions`, `min_length`, `exclude_topics` and `page`. Each post now returns `outlier_score` and `bookmarks`, and the result carries `page` and `has_more`. Reconnect the server to see the new schema
+
 ## 0.7.1 (2026-09-18)
 
 - New skill Worth a Reply (worth-a-reply): `posts:triage` reads a topic, then the skill hands back the posts worth replying to, ordered by how much room there is to add something in a reply, each with its link, one line on why and the angle a reply could take. Skim posts come back as one-liners and the Pass pile stays out unless the person asks. It drafts nothing until they pick a post. Skills are now 32.

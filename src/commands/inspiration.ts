@@ -11,6 +11,8 @@ interface SearchArgs {
   minImpressions?: number;
   minFollowers?: number;
   maxFollowers?: number;
+  minOutlierScore?: number;
+  minLength?: number;
   since?: string;
   until?: string;
   lang?: string;
@@ -32,6 +34,8 @@ export async function inspirationSearch(argv: SearchArgs): Promise<void> {
       min_impressions: argv.minImpressions,
       min_followers: argv.minFollowers,
       max_followers: argv.maxFollowers,
+      min_outlier_score: argv.minOutlierScore,
+      min_length: argv.minLength,
       since: argv.since,
       until: argv.until,
       lang: argv.lang,
