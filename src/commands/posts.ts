@@ -107,6 +107,7 @@ export async function postsRemix(argv: {
   text: string;
   closeness: number;
   instructions?: string;
+  authorHandle?: string;
   account?: string;
 }): Promise<void> {
   const body: Record<string, unknown> = {
@@ -114,6 +115,7 @@ export async function postsRemix(argv: {
     closeness: argv.closeness,
   };
   if (argv.instructions) body.instructions = argv.instructions;
+  if (argv.authorHandle) body.author_handle = argv.authorHandle;
   if (argv.account) body.account_id = argv.account;
 
   const api = new SuperXAPI(getConfig());

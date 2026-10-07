@@ -322,8 +322,13 @@ yargs(hideBin(process.argv))
           describe: "Extra direction for this remix (max 500 chars)",
           type: "string",
         })
+        .option("author-handle", {
+          describe: "The @handle that originally posted the text. Pass this account's own handle when remixing one of its own posts so the subject stays",
+          type: "string",
+        })
         .example('$0 posts:remix --text "$(cat post.txt)" --closeness 70', "A close rewrite in your voice")
         .example('$0 posts:remix --text "..." --closeness 20 --instructions "make it a question"', "A loose reinterpretation")
+        .example('$0 posts:remix --text "$(cat old-post.txt)" --closeness 60 --author-handle @you', "Say one of your own posts again, same subject")
         .epilogue(
           "Returns TEXT ONLY. Nothing is posted or scheduled: save the result with posts:draft or scheduled:create once you are happy with it."
         ),

@@ -359,6 +359,7 @@ superx engage:reply-draft --text "hot take about pricing" --handle levelsio --au
 # Rewrite a post, near or far from the original
 superx posts:remix --text "$(cat post.txt)" --closeness 70
 superx posts:remix --text "..." --closeness 20 --instructions "make it a question"
+superx posts:remix --text "$(cat old-post.txt)" --closeness 60 --author-handle @you
 
 # Change one selected piece, keeping the surrounding style
 superx tools:inline-edit --text "the hook line" --full "$(cat post.txt)" --type hook
@@ -381,7 +382,7 @@ superx posts:triage "indie SaaS" --days 7
 
 - **Every one of these returns TEXT and posts NOTHING.** `engage:reply-draft` writes a reply for a person to review and post; there is still no reply-sending command anywhere in the CLI. Show the draft, let the user edit it, and never say a reply went out.
 - `engage:reply-draft` takes exactly one of `--post <id>` (the API reads the post live, so the draft sees the real text, author and any quoted post) or `--text` with optional `--author` and `--handle`. Add `--thoughts` with what the USER wants to say - ask them, never invent an opinion for them - and `--tone engaging|humorous|creative|sarcastic|inspirational|concise`. `--post` also spends one live X lookup on top of the credit.
-- `posts:remix` needs `--closeness` 0-100: 0 keeps only the idea, 100 stays very close to the original wording. Use it on a proven post the user wants to say again in their own words, then save the result with `posts:draft` or `scheduled:create`.
+- `posts:remix` needs `--closeness` 0-100: 0 keeps only the idea, 100 stays very close to the original wording. Use it on a proven post the user wants to say again in their own words, then save the result with `posts:draft` or `scheduled:create`. When the post is one of the account's OWN (from `posts:list`, analytics or an old post the user pastes), add `--author-handle` with that account's handle so the remix keeps its subject instead of re-grounding it in the profile.
 - `tools:inline-edit` needs `--instruction`, `--type`, or both, and works best with `--full` so the edit blends into the post around it. `--type` presets: grammar, translate, hook, details, concise, engaging, humorous, creative, sarcastic, inspirational.
 - `tools:rephrase` presets: improve, grammar, translate, hook, details, clarity, engaging, humorous, positive, creative, sarcastic, inspirational, concise. The style ones write in the user's voice; grammar, translate, clarity, details and concise stay mechanical.
 - `tools:factcheck` reports `result` (true, false or unknown), a one-sentence `comment` and the `sources` it read. It is a model's reading of a couple of search results, NOT a guarantee: show the sources and never present the verdict as settled.
