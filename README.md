@@ -207,7 +207,7 @@ superx scheduled:create --text "Post" --at "2026-08-01T15:00:00Z" --idempotency-
 
 superx scheduled:list --status draft,scheduled       # draft | scheduled | sent | error
 superx scheduled:list --from "2026-08-01T00:00:00Z" --to "2026-08-08T00:00:00Z"
-superx scheduled:delete <post-id>
+superx scheduled:delete <post-id>                    # posts quoting it re-point to its quoted post if yours (scheduled earlier or published), else lose the quote
 ```
 
 Images attach in two steps: upload, then reference the `object_key`.

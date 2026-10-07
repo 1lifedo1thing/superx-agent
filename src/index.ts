@@ -1527,7 +1527,7 @@ yargs(hideBin(process.argv))
           type: "string",
         })
         .option("status", {
-          describe: "Explicit transition; scheduled needs a future time (via --at or already set)",
+          describe: "Explicit transition; scheduled needs a future time (via --at or already set). Moving a scheduled post to draft re-points scheduled posts that quote it to the post it quoted when that is one of your own posts (still scheduled earlier, or already published); otherwise they lose the quote",
           type: "string",
           choices: ["draft", "scheduled"],
         })
@@ -1551,7 +1551,7 @@ yargs(hideBin(process.argv))
   )
   .command(
     "scheduled:delete <id>",
-    "Delete a draft or scheduled post by id",
+    "Delete a draft or scheduled post by id. Scheduled posts that quote it are re-pointed to the post it quoted when that is one of your own posts (still scheduled earlier, or already published); otherwise they lose the quote",
     (y: Argv) => y.positional("id", { describe: "Post id (from scheduled:list or scheduled:create)", type: "string" }),
     run(scheduledDelete)
   )
@@ -1618,7 +1618,7 @@ yargs(hideBin(process.argv))
   )
   .command(
     "scheduled:bulk-delete",
-    "Delete up to 100 QUEUED posts and refund their post quota (sent posts and drafts are left alone)",
+    "Delete up to 100 QUEUED posts and refund their post quota (sent posts and drafts are left alone). Scheduled posts that quote them are re-pointed to the post each one quoted when that is one of your own posts (still scheduled earlier, or already published); otherwise they lose the quote",
     (y: Argv) =>
       accountOption(y)
         .option("ids", { describe: "Comma list of post ids (max 100, from scheduled:list)", type: "string" })
