@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.8.0 (2026-10-07)
 
 - `posts:remix` gains `--author-handle <@handle>`, the handle that originally posted the text. Pass the account's own handle when remixing one of its own posts: the remix then keeps that post's subject and products instead of re-grounding them in the profile. The API (`author_handle` on `POST /v1/posts/remix`) and MCP `remix_post` take the same field
 - Deleting a scheduled post (`scheduled:delete`, `scheduled:bulk-delete`, MCP `delete_scheduled_post` / `bulk_delete_scheduled_posts`) or moving one to draft (`scheduled:update --status draft`) now re-points scheduled posts that quote it to the post it quoted when that is one of your own posts (still scheduled earlier, or already published); otherwise they lose the quote
