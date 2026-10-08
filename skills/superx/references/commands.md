@@ -25,6 +25,7 @@ stay in [SKILL.md](../SKILL.md).
 - [Workers (posts written for you on a schedule)](#workers-posts-written-for-you-on-a-schedule)
 - [Scheduling](#scheduling)
 - [Publishing now (irreversible)](#publishing-now-irreversible)
+- [Quote posts and video-only quotes](#quote-posts-and-video-only-quotes)
 - [Bulk queue operations](#bulk-queue-operations)
 - [Editing drafts and scheduled posts](#editing-drafts-and-scheduled-posts)
 - [Advanced settings (auto retweet, auto delete, auto plug, auto DM, super followers)](#advanced-settings-auto-retweet-auto-delete-auto-plug-auto-dm-super-followers)
@@ -477,6 +478,27 @@ superx posts:publish --text "Chart of the week" --media "$KEY" --alt-text "Weekl
 - No `--at`, `--title` or `--scratchpad`: a published post has no draft to organize (passing them returns 400).
 - The result carries `status: "sent"`, `posted_at`, `x_post_id` and `url`.
 - Advanced settings and Auto DM inherit the account's Default Post Settings exactly like `scheduled:create`; the `--no-*` forms turn one off for this post.
+
+### Quote posts and video-only quotes
+
+```bash
+# Quote a post (URL or numeric id) on the first part
+superx scheduled:create --text "This is the one" \
+  --quote-post https://x.com/benjitaylor/status/2107973656098033792
+
+# Video-only quote: posts just that post's video, with a "From <display name>" chip
+superx scheduled:create --text "This is the one" \
+  --quote-post https://x.com/benjitaylor/status/2107973656098033792 --quote-video-only
+
+# Quote from another part of a thread: put the quote in --parts-json
+superx scheduled:create --parts-json '[{"text":"1/ Hook"},{"text":"2/ Watch this","quote":{"post":"2107973656098033792","video_only":true}}]'
+```
+
+- `--quote-post` and `--quote-video-only` work on `scheduled:create`, `scheduled:update` and `posts:publish`, and apply to the FIRST part. A `--parts-json` part takes `"quote": {"post": "<url|id>", "video_only": true}`; using `--quote-post` with a `--parts-json` that already sets a quote is refused.
+- `--quote-video-only` is X's "Post video" form: the post shows only the quoted post's video with a "From <display name>" chip (for example "From Benji Taylor"), and the link is hidden. The quoted post must contain a video (400 otherwise). If the same part also carries your own media, X shows the full quote instead. The video link adds 24 characters to that part at publish time, so leave room under the X limit.
+- The API checks the quoted post on X when you save (one live lookup, so each new quote costs one enrichment unit). A post it cannot find returns 400; it may be deleted or protected, and a lookup that fails upstream can also report this, so retry if you are sure the post exists. When live lookups are unavailable or the lookup allowance is spent, a plain quote given as a URL is still saved without the check; `--quote-video-only`, or a bare post id, returns 503 `upstream_unavailable` (lookups unavailable, retry shortly) or 429 with a `Retry-After` delay (allowance spent).
+- On `scheduled:update`, `--quote-post` needs `--text`, `--part` or `--parts-json` (parts are replaced). Without it the post keeps its current quote; to remove a quote send `--parts-json` with `"quote": null` on that part.
+- Reading a post back (`scheduled:list`) shows `quote: { post_id, url, video_only }` on parts that have one.
 
 ### Bulk queue operations
 

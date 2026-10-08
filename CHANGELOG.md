@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- `scheduled:create`, `scheduled:update` and `posts:publish` gain `--quote-post <url|id>` to quote another X post on the first part, and `--quote-video-only` to post only that post's video with a "From <display name>" chip (X's "Post video"; the quoted post must contain a video). `--parts-json` parts take `"quote": {"post": "...", "video_only": true}`. The API (`parts[].quote` on `POST /v1/scheduled-posts` and `PATCH /v1/scheduled-posts/{id}`) and MCP `schedule_post`, `update_scheduled_post` and `publish_post` take the same field, and read-backs show `quote: { post_id, url, video_only }` on parts that have one. Nothing changes for posts without a quote. Reconnect the server to see the new schema
+
 ## 0.8.0 (2026-10-07)
 
 - `posts:remix` gains `--author-handle <@handle>`, the handle that originally posted the text. Pass the account's own handle when remixing one of its own posts: the remix then keeps that post's subject and products instead of re-grounding them in the profile. The API (`author_handle` on `POST /v1/posts/remix`) and MCP `remix_post` take the same field

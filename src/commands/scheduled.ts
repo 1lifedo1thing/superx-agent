@@ -59,9 +59,15 @@ function mediaFromFlags(mediaFlag?: string, altText?: string): MediaItem[] | nul
   }));
 }
 
-/** Parse --parts-json: a JSON array of { text, media?: [{ object_key, alt_text? }] }.
- * text may be omitted on a part that has media (media-only part). */
-function parsePartsJson(raw: string): Array<{ text?: string; media?: MediaItem[] }> {
+interface QuoteItem {
+  post: string;
+  video_only?: boolean;
+}
+
+/** Parse --parts-json: a JSON array of { text, media?: [{ object_key, alt_text? }],
+ * quote?: { post, video_only? } }. text may be omitted on a part that has
+ * media (media-only part). quote passes through as is (the API validates it). */
+function parsePartsJson(raw: string): Array<{ text?: string; media?: MediaItem[]; quote?: QuoteItem | null }> {
   let parsed: unknown;
   try {
     parsed = JSON.parse(raw);
@@ -79,10 +85,59 @@ function parsePartsJson(raw: string): Array<{ text?: string; media?: MediaItem[]
         (typeof p.text !== "string" && !(p.text === undefined && Array.isArray(p.media) && p.media.length > 0))
     )
   ) {
-    note("--parts-json must be an array of { text, media? } objects (text may be left out on a part with media).");
+    note("--parts-json must be an array of { text, media?, quote? } objects (text may be left out on a part with media).");
     process.exit(1);
   }
-  return parsed as Array<{ text?: string; media?: MediaItem[] }>;
+  return parsed as Array<{ text?: string; media?: MediaItem[]; quote?: QuoteItem | null }>;
+}
+
+interface QuoteFlagArgs {
+  "quote-post"?: string;
+  "quote-video-only"?: boolean;
+}
+
+/**
+ * Map --quote-post / --quote-video-only onto the FIRST part of the body
+ * (call after body.text / body.parts are built). A single --text post is
+ * turned into the equivalent one-part parts array so it can carry the quote.
+ * Refuses a --parts-json that already sets a quote on any part, so the two
+ * never silently override each other.
+ */
+function applyQuoteFlags(argv: QuoteFlagArgs, body: Record<string, unknown>): void {
+  const post = argv["quote-post"];
+  const videoOnly = argv["quote-video-only"] === true;
+  if (post === undefined) {
+    if (videoOnly) {
+      note("--quote-video-only requires --quote-post <url|id>.");
+      process.exit(1);
+    }
+    return;
+  }
+  if (typeof post !== "string" || post.trim().length === 0) {
+    note("--quote-post needs an X post URL or numeric post id.");
+    process.exit(1);
+  }
+  const quote: QuoteItem = { post: post.trim(), ...(videoOnly ? { video_only: true } : {}) };
+  if (Array.isArray(body.parts)) {
+    const parts = body.parts as Array<Record<string, unknown>>;
+    if (parts.some((p) => p && p.quote !== undefined)) {
+      note("--quote-post cannot be combined with a --parts-json that already sets quote. Put the quote in --parts-json instead.");
+      process.exit(1);
+    }
+    if (parts.length === 0) {
+      note("--quote-post needs post text: pass --text, --part or --parts-json with it.");
+      process.exit(1);
+    }
+    parts[0] = { ...parts[0], quote };
+    return;
+  }
+  if (typeof body.text === "string") {
+    body.parts = [{ text: body.text, quote }];
+    delete body.text;
+    return;
+  }
+  note("--quote-post needs post text: pass --text, --part or --parts-json with it.");
+  process.exit(1);
 }
 
 /** Flags shared by scheduled:create and scheduled:update. The numeric flags
@@ -245,7 +300,7 @@ export async function plugTemplatesList(argv: { account?: string }): Promise<voi
   printJson(await api.listPlugTemplates({ account_id: argv.account }));
 }
 
-export async function scheduledCreate(argv: AdvancedFlagArgs & {
+export async function scheduledCreate(argv: AdvancedFlagArgs & QuoteFlagArgs & {
   text?: string;
   part?: string[];
   "parts-json"?: string;
@@ -289,6 +344,7 @@ export async function scheduledCreate(argv: AdvancedFlagArgs & {
   } else {
     body.parts = parts.map((text) => ({ text }));
   }
+  applyQuoteFlags(argv, body);
   if (argv.at) body.scheduled_for = argv.at;
   if (argv.title !== undefined) body.title = argv.title;
   if (argv.scratchpad !== undefined) body.scratchpad = argv.scratchpad;
@@ -308,7 +364,7 @@ export async function scheduledCreate(argv: AdvancedFlagArgs & {
   printJson(json);
 }
 
-export async function scheduledUpdate(argv: AdvancedFlagArgs & {
+export async function scheduledUpdate(argv: AdvancedFlagArgs & QuoteFlagArgs & {
   id: string;
   text?: string;
   part?: string[];
@@ -374,6 +430,10 @@ export async function scheduledUpdate(argv: AdvancedFlagArgs & {
   } else if (parts.length > 0) {
     body.parts = parts.map((text) => ({ text }));
   }
+  // PATCH parts are a full replace, so a quote needs the text it rides with
+  // (applyQuoteFlags refuses --quote-post without --text/--part/--parts-json).
+  // Without --quote-post the post keeps its current quote.
+  applyQuoteFlags(argv, body);
   if (argv.at) body.scheduled_for = argv.at;
   if (argv.status) body.status = argv.status;
   if (argv.title !== undefined) body.title = argv.title;
@@ -407,7 +467,7 @@ export async function scheduledDelete(argv: { id: string }): Promise<void> {
  * --idempotency-key is REQUIRED: publishing cannot be undone, and reusing the
  * same key on a retry is what stops a timed-out call from posting twice.
  */
-export async function postsPublish(argv: AdvancedFlagArgs & {
+export async function postsPublish(argv: AdvancedFlagArgs & QuoteFlagArgs & {
   text?: string;
   part?: string[];
   "parts-json"?: string;
@@ -455,6 +515,7 @@ export async function postsPublish(argv: AdvancedFlagArgs & {
   } else {
     body.parts = parts.map((text) => ({ text }));
   }
+  applyQuoteFlags(argv, body);
   const tags = (argv.tag || []).filter((t) => typeof t === "string" && t.length > 0);
   if (tags.length > 0) body.tags = tags;
   applyAdvancedFlags(argv, body);

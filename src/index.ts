@@ -1473,8 +1473,16 @@ yargs(hideBin(process.argv))
           type: "string",
         })
         .option("parts-json", {
-          describe: 'Full parts array as JSON for threads with media: [{"text":"...","media":[{"object_key":"...","alt_text":"..."}]}]',
+          describe: 'Full parts array as JSON for threads with media or quotes: [{"text":"...","media":[{"object_key":"...","alt_text":"..."}],"quote":{"post":"<url|id>","video_only":true}}]',
           type: "string",
+        })
+        .option("quote-post", {
+          describe: "Quote another X post (URL or numeric id) on the first part. Use --parts-json with a quote per part to quote from other parts",
+          type: "string",
+        })
+        .option("quote-video-only", {
+          describe: "With --quote-post: post only the quoted post's video, with a \"From <display name>\" chip (the post must contain a video; with your own media attached X shows the full quote instead)",
+          type: "boolean",
         })
         .option("at", {
           describe:
@@ -1498,6 +1506,7 @@ yargs(hideBin(process.argv))
         .example('$0 scheduled:create --text "Hello" --title "Launch teaser" --tag abc123', "Draft with a title and a tag")
         .example('$0 scheduled:create --text "Chart of the week" --media "<object_key>" --alt-text "Revenue chart"', "Draft with an image")
         .example('$0 scheduled:create --media "<object_key>"', "Draft an image-only post (no text)")
+        .example('$0 scheduled:create --text "This is the one" --quote-post https://x.com/benjitaylor/status/2107973656098033792 --quote-video-only', "Draft a video-only quote")
         .example('$0 scheduled:create --text "Hello" --at "2026-08-01T15:00:00Z" --auto-retweet 6 --auto-retweet-remove 4', "Schedule with an auto retweet")
         .example('$0 scheduled:create --text "Hello" --at "2026-08-01T15:00:00Z" --no-auto-retweet --no-auto-plug', "Schedule with your defaults off for this post"),
     run(scheduledCreate)
@@ -1523,8 +1532,16 @@ yargs(hideBin(process.argv))
           type: "string",
         })
         .option("parts-json", {
-          describe: 'Full replacement parts array as JSON: [{"text":"...","media":[{"object_key":"..."}]}]',
+          describe: 'Full replacement parts array as JSON: [{"text":"...","media":[{"object_key":"..."}],"quote":{"post":"<url|id>"}}]. Leaving quote out of a part keeps its current quote; "quote": null removes it',
           type: "string",
+        })
+        .option("quote-post", {
+          describe: "Set the quote on the first part (URL or numeric id of an X post). Needs --text, --part or --parts-json, since parts are replaced. Without it the post keeps its current quote",
+          type: "string",
+        })
+        .option("quote-video-only", {
+          describe: "With --quote-post: post only the quoted post's video, with a \"From <display name>\" chip (the post must contain a video)",
+          type: "boolean",
         })
         .option("at", {
           describe:
@@ -1551,7 +1568,8 @@ yargs(hideBin(process.argv))
         .example('$0 scheduled:update abc123 --status draft', "Pull a post back to drafts (quota refunds)")
         .example('$0 scheduled:update abc123 --auto-delete 8 --auto-delete-threshold 500', "Add an auto delete to the post")
         .example('$0 scheduled:update abc123 --no-auto-retweet', "Remove the post's auto retweet")
-        .example('$0 scheduled:update abc123 --text "" --media "<object_key>"', "Make the post image-only (removes its text)"),
+        .example('$0 scheduled:update abc123 --text "" --media "<object_key>"', "Make the post image-only (removes its text)")
+        .example('$0 scheduled:update abc123 --text "Watch this" --quote-post https://x.com/benjitaylor/status/2107973656098033792', "Replace the text and quote a post"),
     run(scheduledUpdate)
   )
   .command(
@@ -1580,8 +1598,16 @@ yargs(hideBin(process.argv))
           type: "string",
         })
         .option("parts-json", {
-          describe: 'Full parts array as JSON for threads with media: [{"text":"...","media":[{"object_key":"...","alt_text":"..."}]}]',
+          describe: 'Full parts array as JSON for threads with media or quotes: [{"text":"...","media":[{"object_key":"...","alt_text":"..."}],"quote":{"post":"<url|id>","video_only":true}}]',
           type: "string",
+        })
+        .option("quote-post", {
+          describe: "Quote another X post (URL or numeric id) on the first part. Use --parts-json with a quote per part to quote from other parts",
+          type: "string",
+        })
+        .option("quote-video-only", {
+          describe: "With --quote-post: post only the quoted post's video, with a \"From <display name>\" chip (the post must contain a video; with your own media attached X shows the full quote instead)",
+          type: "boolean",
         })
         .option("tag", {
           describe: "Tag id to assign (repeat the flag, max 20; ids from tags:list)",
@@ -1595,6 +1621,7 @@ yargs(hideBin(process.argv))
         .example('$0 posts:publish --text "Shipping now." --idempotency-key launch-2026-09-07', "Publish a single post")
         .example('$0 posts:publish --part "1/ Hook" --part "2/ Detail" --idempotency-key thread-42', "Publish a thread")
         .example('$0 posts:publish --media "<object_key>" --idempotency-key gif-2026-10-03', "Publish an image-only post")
+        .example('$0 posts:publish --text "This is the one" --quote-post https://x.com/benjitaylor/status/2107973656098033792 --quote-video-only --idempotency-key quote-2026-10-08', "Publish a video-only quote")
         .example('$0 posts:publish --text "Shipping now." --auto-retweet 6 --idempotency-key launch-2026-09-07', "Publish with an auto retweet"),
     run(postsPublish)
   )
