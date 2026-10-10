@@ -924,7 +924,16 @@ yargs(hideBin(process.argv))
       y
         .positional("id", { describe: "Post URL or bare numeric post id", type: "string" })
         .option("limit", { describe: "Replies to return (1-20, default 10)", type: "number" })
-        .example("$0 x:replies 1938765432109876543 --limit 20", "The twenty best-liked replies"),
+        .option("worth-replying", {
+          describe:
+            "Instead return up to 3 judged small-account replies with at most one reply so far, each with a person block (costs 5 units; excludes your own accounts)",
+          type: "boolean",
+        })
+        .example("$0 x:replies 1938765432109876543 --limit 20", "The twenty best-liked replies")
+        .example(
+          "$0 x:replies 1938765432109876543 --worth-replying",
+          "Up to 3 small-account replies worth answering"
+        ),
     run(xReplies)
   )
   .command(

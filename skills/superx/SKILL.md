@@ -278,6 +278,7 @@ scoping are in [references/skills/README.md](./references/skills/README.md).
 52. **The writing helpers draft, they never publish.** `engage:reply-draft`, `posts:remix`, `tools:inline-edit`, `tools:rephrase`, `tools:factcheck` and `posts:viral-score` all return TEXT or a score and stop there - nothing is posted, scheduled or sent. Unlike `posts:draft`, they also accept an account shared with you. Show the output, let the user edit it, and use `posts:draft`, `scheduled:create` or `posts:publish` when they say so. A `tools:factcheck` verdict is a model reading two search results: report it with its sources, never as settled fact.
 53. **The free helpers cost nothing but are not unlimited.** `context:regenerate-style-guide` is once an hour per account and does not override a manual style-guide setting; `context:scrape-product` and `signals:expand-icp --url` share 20 page reads a day with the SuperX app, and `--url` also inherits the app's limit of 10 prefills per 10 minutes (that one comes back as `rate_limited` and clears in about a minute, so retry rather than reporting a daily budget); `signals:suggest-keywords` and `signals:expand-icp --text` have no ceiling of their own, so do not loop them - each one is a model call. All five send `X-Credits-Remaining` but no `X-Credits-Charged`, because nothing was charged. All four commands still need a key with the write scope: they are POSTs, and every non-GET API route needs it.
 54. **A DM campaign is an ENQUEUE, not a send.** `dm:campaign` returns counts of what was QUEUED; the SuperX app's scheduler sends them later, within the account's daily and monthly DM limits, so never report messages as delivered from that response - `dm:campaign-status` and `dm:queue` show what actually went out. Confirm the recipient list and the exact text with the user first: they are responsible for these messages under X's automation rules. Cancel the unsent ones with `dm:cancel`; anything already sent cannot be recalled.
+55. **`x:replies --worth-replying` returns at most 3, and may return none.** It is the judged small-account list the app suggests under busy posts (100 to 3,000 followers, at most one reply so far, tone and relevance checked), not the top replies, and it costs 5 enrichment units. An empty list is a real answer (a thin thread, or nobody worth answering), so do not retry it: results are cached per post for up to 3 hours. It leaves out the owner's own main and linked accounts and replies the main account already answered, and it draws on a separate people allowance, not the shared 300/day. On `503 feature_unavailable` the option is not enabled yet: fall back to plain `x:replies` and pick candidates yourself.
 
 ---
 
@@ -325,9 +326,10 @@ superx datasets:refine <dataset-id> --criterion "..." --wait          # filter b
 superx datasets:research --handles a,b,c --wait                       # briefs, 1 credit per profile
 superx datasets:outreach-drafts <dataset-id> --format "..."           # message TEXT only, nothing sent
 
-# Live X lookups (enrichment units + a shared 300/day allowance)
+# Live X lookups (enrichment units + a shared 300/day allowance; --worth-replying uses a separate people allowance, 3h cache)
 superx x:post <id-or-url>                             # one public post, live (--quotes for quotes)
 superx x:replies <id-or-url> --limit 20               # best-liked direct replies (a sample)
+superx x:replies <id-or-url> --worth-replying         # up to 3 small-account replies worth answering (5 units)
 superx x:user <handle>                                # one public profile, live
 superx x:user-posts <handle> --no-reposts             # one live page of their latest posts
 

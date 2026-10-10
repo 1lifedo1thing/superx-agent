@@ -96,6 +96,7 @@ superx inspiration:search "SaaS pricing" --min-outlier-score 3 --min-length 100 
 superx x:post https://x.com/levelsio/status/1938765432109876543   # one public post, live
 superx x:post 1938765432109876543 --quotes                        # + a page of quote posts
 superx x:replies 1938765432109876543 --limit 20                   # best-liked direct replies
+superx x:replies 1938765432109876543 --worth-replying             # up to 3 small accounts worth answering
 superx x:user @levelsio                                           # one public profile, live
 superx x:user-posts levelsio --limit 20 --no-reposts              # their latest posts
 ```
@@ -105,6 +106,7 @@ superx x:user-posts levelsio --limit 20 --no-reposts              # their latest
 - On top of that they share an allowance of **300 live lookups per day** with Ask SuperX inside the app. Over it: `429 lookup_quota_exceeded` with `retry_after`, `limit` and `reset_at`, resetting at midnight UTC. That gate fails CLOSED, so the same code appears when SuperX cannot verify the count. Do not retry in a loop; tell the user.
 - Results are cached server-side for about **15 minutes**. A repeat still costs its enrichment units but does not touch the 300/day allowance.
 - `x:replies` is a **sample**: the best-liked replies from up to 3 relevance-ranked pages (about 60 candidates), never every reply and never chronological. For everyone who replied to a post, use the audience collections (`datasets:list`) built in the app. It also does NOT hide the account owner's own replies, unlike the same feature in the app.
+- `x:replies --worth-replying` is a different list: up to 3 judged small-account replies worth answering (100 to 3,000 followers, at most one reply so far, tone and relevance checked), each with a `person` block (`why`, `worth_reply`, `replies_on_it`, `author_bio`). It costs **5** units, leaves out the owner's own main and linked accounts and replies the main account already answered, draws on a separate people allowance (not the 300/day), and is cached per post for up to 3 hours. An empty list is a real answer. `503 feature_unavailable` means the option is not enabled yet: use plain `x:replies`.
 - `x:post` 404s `post_not_found` for a deleted, protected or wrong id. The upstream read reports a missing post and a failed read identically, so retry once before telling the user a post is gone. `x:user` / `x:user-posts` 404 `user_not_found` for a suspended, renamed or misspelled handle.
 - Owner-scoped: none of these take `--account`. Nothing about a public lookup is per-X-account.
 

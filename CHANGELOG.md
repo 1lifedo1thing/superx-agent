@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- `x:replies` gains `--worth-replying`: instead of the top replies it returns up to 3 judged small-account replies worth answering (accounts with 100 to 3,000 followers, at most one reply so far, that passed a tone and relevance check), each with a `person` block (`why`, `worth_reply`, `replies_on_it`, `author_bio`). Replies from your own main and linked accounts, and replies your main account already answered, are left out. It costs 5 enrichment units instead of 3, and answers `503 feature_unavailable` while the feature is not enabled. The API (`worth_replying=true` on `GET /v1/x/posts/{id}/replies`) and MCP `get_x_post_replies` (`worth_replying: true`) take the same option. Reconnect the server to see the new schema
 - `scheduled:create`, `scheduled:update` and `posts:publish` gain `--quote-post <url|id>` to quote another X post on the first part, and `--quote-video-only` to post only that post's video with a "From <display name>" chip (X's "Post video"; the quoted post must contain a video). `--parts-json` parts take `"quote": {"post": "...", "video_only": true}`. The API (`parts[].quote` on `POST /v1/scheduled-posts` and `PATCH /v1/scheduled-posts/{id}`) and MCP `schedule_post`, `update_scheduled_post` and `publish_post` take the same field, and read-backs show `quote: { post_id, url, video_only }` on parts that have one. Nothing changes for posts without a quote. Reconnect the server to see the new schema
 
 ## 0.8.0 (2026-10-07)

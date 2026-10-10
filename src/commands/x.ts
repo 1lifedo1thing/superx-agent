@@ -6,9 +6,10 @@ import { getConfig } from "../config";
  * account's latest posts from X right now, rather than from SuperX's stored
  * data.
  *
- * These cost the tighter enrichment allowance (1 unit each, 3 for replies,
- * 2 for `--quotes` or a handle SuperX has never seen) and share an allowance
- * of 300 live lookups a day with Ask SuperX in the app.
+ * These cost the tighter enrichment allowance (1 unit each, 3 for replies
+ * (5 with `--worth-replying`), 2 for `--quotes` or a handle SuperX has never
+ * seen) and share an allowance of 300 live lookups a day with Ask SuperX in
+ * the app.
  */
 
 /**
@@ -51,9 +52,18 @@ export async function xPost(argv: { id: string; quotes?: boolean }): Promise<voi
   );
 }
 
-export async function xReplies(argv: { id: string; limit?: number }): Promise<void> {
+export async function xReplies(argv: {
+  id: string;
+  limit?: number;
+  worthReplying?: boolean;
+}): Promise<void> {
   const api = new SuperXAPI(getConfig());
-  printJson(await api.getXPostReplies(toPostId(argv.id), { limit: argv.limit }));
+  printJson(
+    await api.getXPostReplies(toPostId(argv.id), {
+      limit: argv.limit,
+      worth_replying: argv.worthReplying ? "true" : undefined,
+    })
+  );
 }
 
 export async function xUser(argv: { handle: string }): Promise<void> {

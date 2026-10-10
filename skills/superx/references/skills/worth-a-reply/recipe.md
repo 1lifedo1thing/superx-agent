@@ -13,4 +13,6 @@ Read `lane`, `pct`, `kind` and `answers` from every post. Present the `read` lan
 
 MCP: `triage_posts` -> `draft_reply` only when the person picks a post and says what they want to say
 
+To reply to the small accounts already replying under one busy post instead, see the Reply to Any Post recipe's `x:replies --worth-replying` variant.
+
 Stops at: a reply list, in chat, for the person to pick from. It drafts nothing until they choose a post, and nothing is ever sent. A run costs a flat 2 credits and spends 1 live X lookup for a single-word topic or 2 for a multi-word one, out of the account's daily allowance.
